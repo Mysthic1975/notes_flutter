@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'note.dart';
 import 'app_localizations.dart';
-import 'theme_provider.dart'; // Importieren Sie ThemeProvider
+import 'theme_provider.dart';
+import 'database_helper.dart';
 
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
@@ -15,6 +16,17 @@ class NotesPageState extends State<NotesPage> {
   List<Note> notes = [];
 
   @override
+  void initState() {
+    super.initState();
+    loadNotes();
+  }
+
+  Future<void> loadNotes() async {
+    notes = await DatabaseHelper.instance.getNotes();
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
     var themeProvider = Provider.of<ThemeProvider>(context);
 
@@ -24,15 +36,14 @@ class NotesPageState extends State<NotesPage> {
         backgroundColor: Colors.red,
         actions: [
           IconButton(
-            icon: Icon(themeProvider.themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode),
+            icon: Icon(themeProvider.themeMode == ThemeMode.light
+                ? Icons.dark_mode
+                : Icons.light_mode),
             onPressed: themeProvider.switchTheme,
           ),
         ],
       ),
-      body: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, // Anzahl der Spalten
-        ),
+      body: ListView.builder(
         itemCount: notes.length,
         itemBuilder: (context, index) {
           return Card(
@@ -64,15 +75,19 @@ class NotesPageState extends State<NotesPage> {
                                   onChanged: (value) {
                                     title = value;
                                   },
-                                  decoration: const InputDecoration(hintText: "Titel"),
-                                  controller: TextEditingController(text: title),
+                                  decoration:
+                                      const InputDecoration(hintText: "Titel"),
+                                  controller:
+                                      TextEditingController(text: title),
                                 ),
                                 TextField(
                                   onChanged: (value) {
                                     content = value;
                                   },
-                                  decoration: const InputDecoration(hintText: "Inhalt"),
-                                  controller: TextEditingController(text: content),
+                                  decoration:
+                                      const InputDecoration(hintText: "Inhalt"),
+                                  controller:
+                                      TextEditingController(text: content),
                                 ),
                               ],
                             ),
@@ -85,9 +100,12 @@ class NotesPageState extends State<NotesPage> {
                               ),
                               TextButton(
                                 child: const Text('Aktualisieren'),
-                                onPressed: () {
+                                onPressed: () async {
+                                  Note note =
+                                      Note(title, content, id: notes[index].id);
+                                  await DatabaseHelper.instance.update(note);
                                   setState(() {
-                                    notes[index] = Note(title, content);
+                                    notes[index] = note;
                                   });
                                   Navigator.of(context).pop();
                                 },
@@ -100,10 +118,14 @@ class NotesPageState extends State<NotesPage> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      setState(() {
-                        notes.removeAt(index);
-                      });
+                    onPressed: () async {
+                      int id = notes[index].id ?? 0;
+                      if (id > 0) {
+                        await DatabaseHelper.instance.delete(id);
+                        setState(() {
+                          notes.removeAt(index);
+                        });
+                      }
                     },
                   ),
                 ],
@@ -153,9 +175,11 @@ class NotesPageState extends State<NotesPage> {
                   ),
                   TextButton(
                     child: const Text('Hinzufügen'),
-                    onPressed: () {
+                    onPressed: () async {
+                      Note note = Note(title, content);
+                      await DatabaseHelper.instance.insert(note);
                       setState(() {
-                        notes.add(Note(title, content));
+                        notes.add(note);
                       });
                       Navigator.of(context).pop();
                     },
