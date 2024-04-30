@@ -29,12 +29,86 @@ class NotesPageState extends State<NotesPage> {
           ),
         ],
       ),
-      body: ListView.builder(
+      body: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2, // Anzahl der Spalten
+        ),
         itemCount: notes.length,
         itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(notes[index].title),
-            subtitle: Text(notes[index].content),
+          return Card(
+            child: ListTile(
+              title: Text(notes[index].title),
+              subtitle: Text(notes[index].content),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          final localizations = AppLocalizations.of(context);
+                          if (localizations == null) {
+                            return const Text('Localization not found');
+                          }
+
+                          String title = notes[index].title;
+                          String content = notes[index].content;
+
+                          return AlertDialog(
+                            title: Text(localizations.addNote),
+                            content: Column(
+                              children: <Widget>[
+                                TextField(
+                                  onChanged: (value) {
+                                    title = value;
+                                  },
+                                  decoration: const InputDecoration(hintText: "Titel"),
+                                  controller: TextEditingController(text: title),
+                                ),
+                                TextField(
+                                  onChanged: (value) {
+                                    content = value;
+                                  },
+                                  decoration: const InputDecoration(hintText: "Inhalt"),
+                                  controller: TextEditingController(text: content),
+                                ),
+                              ],
+                            ),
+                            actions: <Widget>[
+                              TextButton(
+                                child: Text(localizations.close),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                              TextButton(
+                                child: const Text('Aktualisieren'),
+                                onPressed: () {
+                                  setState(() {
+                                    notes[index] = Note(title, content);
+                                  });
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      setState(() {
+                        notes.removeAt(index);
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
           );
         },
       ),
@@ -49,13 +123,40 @@ class NotesPageState extends State<NotesPage> {
                 return const Text('Localization not found');
               }
 
+              String title = '';
+              String content = '';
+
               return AlertDialog(
                 title: Text(localizations.addNote),
-                content: Text(localizations.inputNoteData),
+                content: Column(
+                  children: <Widget>[
+                    TextField(
+                      onChanged: (value) {
+                        title = value;
+                      },
+                      decoration: const InputDecoration(hintText: "Titel"),
+                    ),
+                    TextField(
+                      onChanged: (value) {
+                        content = value;
+                      },
+                      decoration: const InputDecoration(hintText: "Inhalt"),
+                    ),
+                  ],
+                ),
                 actions: <Widget>[
                   TextButton(
                     child: Text(localizations.close),
                     onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  TextButton(
+                    child: const Text('Hinzufügen'),
+                    onPressed: () {
+                      setState(() {
+                        notes.add(Note(title, content));
+                      });
                       Navigator.of(context).pop();
                     },
                   ),
