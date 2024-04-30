@@ -21,6 +21,7 @@ class MainApp extends StatelessWidget {
       ],
       supportedLocales: [
         Locale('de', ''), // Deutsch
+        Locale('en', ''), // Englisch
         // Sie können hier weitere Sprachen hinzufügen
       ],
       home: NotesPage(),
