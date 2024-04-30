@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'dart:async';
 
 class AppLocalizations {
@@ -50,7 +49,7 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
 
   @override
   bool isSupported(Locale locale) {
-    return ['de'].contains(locale.languageCode);
+    return ['de', 'en'].contains(locale.languageCode);
   }
 
   @override
