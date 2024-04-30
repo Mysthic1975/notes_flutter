@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
 import 'notes_page.dart';
-import 'app_localizations.dart'; // Importieren Sie AppLocalizations
+import 'app_localizations.dart';
+import 'theme_provider.dart'; // Importieren Sie ThemeProvider
 
 void main() {
-  runApp(const MainApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
+      ],
+      child: const MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -12,19 +21,23 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      localizationsDelegates: [
-        AppLocalizations.delegate, // Fügen Sie diesen Delegate hinzu
+    var themeProvider = Provider.of<ThemeProvider>(context);
+
+    return MaterialApp(
+      themeMode: themeProvider.themeMode,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: [
-        Locale('de', ''), // Deutsch
-        Locale('en', ''), // Englisch
-        // Sie können hier weitere Sprachen hinzufügen
+      supportedLocales: const [
+        Locale('de', ''),
+        Locale('en', ''),
       ],
-      home: NotesPage(),
+      home: const NotesPage(),
     );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'note.dart';
 import 'app_localizations.dart';
+import 'theme_provider.dart'; // Importieren Sie ThemeProvider
 
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
@@ -10,13 +12,22 @@ class NotesPage extends StatefulWidget {
 }
 
 class NotesPageState extends State<NotesPage> {
-  List<Note> notes = []; // Hier wird die Liste mit einer leeren Liste initialisiert
+  List<Note> notes = [];
 
   @override
   Widget build(BuildContext context) {
+    var themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)?.notes ?? ''),
+        backgroundColor: Colors.red,
+        actions: [
+          IconButton(
+            icon: Icon(themeProvider.themeMode == ThemeMode.light ? Icons.dark_mode : Icons.light_mode),
+            onPressed: themeProvider.switchTheme,
+          ),
+        ],
       ),
       body: ListView.builder(
         itemCount: notes.length,
@@ -33,14 +44,13 @@ class NotesPageState extends State<NotesPage> {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              // Fügen Sie einen Null-Check hinzu
               final localizations = AppLocalizations.of(context);
               if (localizations == null) {
                 return const Text('Localization not found');
               }
 
               return AlertDialog(
-                title: Text(localizations.addNote), // Verwenden Sie die lokalisierten Strings
+                title: Text(localizations.addNote),
                 content: Text(localizations.inputNoteData),
                 actions: <Widget>[
                   TextButton(
