@@ -3,7 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'notes_page.dart';
 import 'app_localizations.dart';
-import 'theme_provider.dart'; // Importieren Sie ThemeProvider
+import 'theme_provider.dart'; // Import ThemeProvider
 
 void main() {
   runApp(

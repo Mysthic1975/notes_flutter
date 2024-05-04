@@ -22,8 +22,10 @@ class NotesPageState extends State<NotesPage> {
   }
 
   Future<void> loadNotes() async {
-    notes = await DatabaseHelper.instance.getNotes();
-    setState(() {});
+    var newNotes = await DatabaseHelper.instance.getNotes();
+    setState(() {
+      notes = newNotes;
+    });
   }
 
   @override
@@ -76,18 +78,18 @@ class NotesPageState extends State<NotesPage> {
                                     title = value;
                                   },
                                   decoration:
-                                      const InputDecoration(hintText: "Titel"),
+                                  const InputDecoration(hintText: "Titel"),
                                   controller:
-                                      TextEditingController(text: title),
+                                  TextEditingController(text: title),
                                 ),
                                 TextField(
                                   onChanged: (value) {
                                     content = value;
                                   },
                                   decoration:
-                                      const InputDecoration(hintText: "Inhalt"),
+                                  const InputDecoration(hintText: "Inhalt"),
                                   controller:
-                                      TextEditingController(text: content),
+                                  TextEditingController(text: content),
                                 ),
                               ],
                             ),
@@ -102,11 +104,9 @@ class NotesPageState extends State<NotesPage> {
                                 child: const Text('Aktualisieren'),
                                 onPressed: () async {
                                   Note note =
-                                      Note(title, content, id: notes[index].id);
+                                  Note(title, content, id: notes[index].id);
                                   await DatabaseHelper.instance.update(note);
-                                  setState(() {
-                                    notes[index] = note;
-                                  });
+                                  await loadNotes();
                                   Navigator.of(context).pop();
                                 },
                               ),
@@ -122,9 +122,7 @@ class NotesPageState extends State<NotesPage> {
                       int id = notes[index].id ?? 0;
                       if (id > 0) {
                         await DatabaseHelper.instance.delete(id);
-                        setState(() {
-                          notes.removeAt(index);
-                        });
+                        await loadNotes();
                       }
                     },
                   ),
@@ -178,9 +176,7 @@ class NotesPageState extends State<NotesPage> {
                     onPressed: () async {
                       Note note = Note(title, content);
                       await DatabaseHelper.instance.insert(note);
-                      setState(() {
-                        notes.add(note);
-                      });
+                      await loadNotes();
                       Navigator.of(context).pop();
                     },
                   ),
