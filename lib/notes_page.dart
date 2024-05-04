@@ -155,12 +155,18 @@ class NotesPageState extends State<NotesPage> {
                         title = value;
                       },
                       decoration: const InputDecoration(hintText: "Titel"),
+                      controller: TextEditingController(text: title),
+                      maxLines: null,
+                      keyboardType: TextInputType.multiline,
                     ),
                     TextField(
                       onChanged: (value) {
                         content = value;
                       },
                       decoration: const InputDecoration(hintText: "Inhalt"),
+                      controller: TextEditingController(text: content),
+                      maxLines: null,
+                      keyboardType: TextInputType.multiline,
                     ),
                   ],
                 ),
