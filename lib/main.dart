@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'notes_page.dart';
-import 'app_localizations.dart';
-import 'theme_provider.dart'; // Import ThemeProvider
+import 'views/notes_page.dart';
+import 'localization/app_localizations.dart';
+import 'providers/theme_provider.dart'; // Import ThemeProvider
 
 void main() {
   runApp(

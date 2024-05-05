@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'note.dart';
+import '../models/note.dart';
 
 class DatabaseHelper {
   static const _databaseName = "notes_database.db";

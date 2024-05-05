@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'note.dart';
-import 'app_localizations.dart';
-import 'theme_provider.dart';
-import 'database_helper.dart';
+import '../models/note.dart';
+import '../localization/app_localizations.dart';
+import '../providers/theme_provider.dart';
+import '../database/database_helper.dart';
 
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
