@@ -36,7 +36,6 @@ class NotesPageState extends State<NotesPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)?.notes ?? ''),
-        backgroundColor: Colors.red,
         actions: [
           IconButton(
             icon: Icon(themeProvider.themeMode == ThemeMode.light
@@ -50,12 +49,12 @@ class NotesPageState extends State<NotesPage> {
         itemCount: notes.length,
         itemBuilder: (context, index) {
           return Card(
-            color: Colors.grey[850], // Set the Card color
             child: ListTile(
               title: Text(
                 notes[index].title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               onTap: () async {
                 var result = await Navigator.push(
@@ -73,6 +72,7 @@ class NotesPageState extends State<NotesPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Theme.of(context).primaryColor,
         child: const Icon(Icons.add),
         onPressed: () {
           showDialog(

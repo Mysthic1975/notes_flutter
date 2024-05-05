@@ -13,7 +13,7 @@ class NoteDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(note.title),
-        backgroundColor: Colors.red, // Set the AppBar color
+        // Removed the explicit AppBar color
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.edit),
@@ -99,8 +99,11 @@ class NoteDetailPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Container(
-          color: Colors.grey[850], // Set the Container color
-          child: Text(note.content),
+          color: Theme.of(context).canvasColor, // Set the Container color to match the theme
+          child: Text(
+            note.content,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
         ),
       ),
     );
