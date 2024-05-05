@@ -69,48 +69,55 @@ class NotesPageState extends State<NotesPage> {
                           String title = notes[index].title;
                           String content = notes[index].content;
 
-                          return AlertDialog(
-                            title: Text(localizations.addNote),
-                            content: Column(
-                              children: <Widget>[
-                                TextField(
-                                  onChanged: (value) {
-                                    title = value;
-                                  },
-                                  decoration:
-                                  const InputDecoration(hintText: "Titel"),
-                                  controller:
-                                  TextEditingController(text: title),
+                          return StatefulBuilder(
+                            builder: (BuildContext dialogContext, StateSetter setState) {
+                              return AlertDialog(
+                                title: Text(localizations.addNote),
+                                content: Column(
+                                  children: <Widget>[
+                                    TextField(
+                                      onChanged: (value) {
+                                        title = value;
+                                      },
+                                      decoration:
+                                      const InputDecoration(hintText: "Titel"),
+                                      controller:
+                                      TextEditingController(text: title),
+                                      maxLines: null,
+                                      keyboardType: TextInputType.multiline,
+                                    ),
+                                    TextField(
+                                      onChanged: (value) {
+                                        content = value;
+                                      },
+                                      decoration:
+                                      const InputDecoration(hintText: "Inhalt"),
+                                      controller:
+                                      TextEditingController(text: content),
+                                      maxLines: null,
+                                      keyboardType: TextInputType.multiline,
+                                    ),
+                                  ],
                                 ),
-                                TextField(
-                                  onChanged: (value) {
-                                    content = value;
-                                  },
-                                  decoration:
-                                  const InputDecoration(hintText: "Inhalt"),
-                                  controller:
-                                  TextEditingController(text: content),
-                                ),
-                              ],
-                            ),
-                            actions: <Widget>[
-                              TextButton(
-                                child: Text(localizations.close),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                              TextButton(
-                                child: const Text('Aktualisieren'),
-                                onPressed: () async {
-                                  Note note =
-                                  Note(title, content, id: notes[index].id);
-                                  await DatabaseHelper.instance.update(note);
-                                  await loadNotes();
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                            ],
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: Text(localizations.close),
+                                    onPressed: () {
+                                      Navigator.of(dialogContext).pop();
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: const Text('Aktualisieren'),
+                                    onPressed: () {
+                                      Navigator.of(dialogContext).pop(); // Pop the dialog first
+                                      Note note =
+                                      Note(title, content, id: notes[index].id);
+                                      DatabaseHelper.instance.update(note).then((_) => loadNotes());
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
                           );
                         },
                       );
@@ -146,47 +153,50 @@ class NotesPageState extends State<NotesPage> {
               String title = '';
               String content = '';
 
-              return AlertDialog(
-                title: Text(localizations.addNote),
-                content: Column(
-                  children: <Widget>[
-                    TextField(
-                      onChanged: (value) {
-                        title = value;
-                      },
-                      decoration: const InputDecoration(hintText: "Titel"),
-                      controller: TextEditingController(text: title),
-                      maxLines: null,
-                      keyboardType: TextInputType.multiline,
+              return StatefulBuilder(
+                builder: (BuildContext dialogContext, StateSetter setState) {
+                  return AlertDialog(
+                    title: Text(localizations.addNote),
+                    content: Column(
+                      children: <Widget>[
+                        TextField(
+                          onChanged: (value) {
+                            title = value;
+                          },
+                          decoration: const InputDecoration(hintText: "Titel"),
+                          controller: TextEditingController(text: title),
+                          maxLines: null,
+                          keyboardType: TextInputType.multiline,
+                        ),
+                        TextField(
+                          onChanged: (value) {
+                            content = value;
+                          },
+                          decoration: const InputDecoration(hintText: "Inhalt"),
+                          controller: TextEditingController(text: content),
+                          maxLines: null,
+                          keyboardType: TextInputType.multiline,
+                        ),
+                      ],
                     ),
-                    TextField(
-                      onChanged: (value) {
-                        content = value;
-                      },
-                      decoration: const InputDecoration(hintText: "Inhalt"),
-                      controller: TextEditingController(text: content),
-                      maxLines: null,
-                      keyboardType: TextInputType.multiline,
-                    ),
-                  ],
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: Text(localizations.close),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                  TextButton(
-                    child: const Text('Hinzufügen'),
-                    onPressed: () async {
-                      Note note = Note(title, content);
-                      await DatabaseHelper.instance.insert(note);
-                      await loadNotes();
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
+                    actions: <Widget>[
+                      TextButton(
+                        child: Text(localizations.close),
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop();
+                        },
+                      ),
+                      TextButton(
+                        child: const Text('Hinzufügen'),
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop(); // Pop the dialog first
+                          Note note = Note(title, content);
+                          DatabaseHelper.instance.insert(note).then((_) => loadNotes());
+                        },
+                      ),
+                    ],
+                  );
+                },
               );
             },
           );
