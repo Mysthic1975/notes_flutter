@@ -72,7 +72,7 @@ class NoteDetailPage extends StatelessWidget {
                               Navigator.of(dialogContext).pop(); // Pop the dialog first
                               Note updatedNote =
                               Note(title, content, id: note.id);
-                              DatabaseHelper.instance.update(updatedNote);
+                              DatabaseHelper.update(updatedNote);
                               Navigator.pop(context, 'update'); // Pass 'update' back to the previous page
                             },
                           ),
@@ -89,7 +89,7 @@ class NoteDetailPage extends StatelessWidget {
             onPressed: () {
               int id = note.id ?? 0;
               if (id > 0) {
-                DatabaseHelper.instance.delete(id);
+                DatabaseHelper.delete(id);
                 Navigator.pop(context, 'delete'); // Pass 'delete' back to the previous page
               }
             },

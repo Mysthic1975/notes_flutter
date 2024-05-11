@@ -23,7 +23,7 @@ class NotesPageState extends State<NotesPage> {
   }
 
   Future<void> loadNotes() async {
-    var newNotes = await DatabaseHelper.instance.getNotes();
+    var newNotes = await DatabaseHelper.getNotes();
     setState(() {
       notes = newNotes;
     });
@@ -124,7 +124,7 @@ class NotesPageState extends State<NotesPage> {
                         onPressed: () {
                           Navigator.of(dialogContext).pop(); // Pop the dialog first
                           Note note = Note(title, content);
-                          DatabaseHelper.instance.insert(note).then((_) => loadNotes());
+                          DatabaseHelper.insert(note).then((_) => loadNotes());
                         },
                       ),
                     ],

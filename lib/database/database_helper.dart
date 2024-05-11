@@ -1,76 +1,58 @@
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../models/note.dart';
 
 class DatabaseHelper {
-  static const _databaseName = "notes_database.db";
-  static const _databaseVersion = 1;
+  static const serverUrl = 'http://localhost:8080/data';
 
-  static const table = 'notes';
+  // Get all notes from the server
+  static Future<List<Note>> getNotes() async {
+    var response = await http.get(Uri.parse(serverUrl));
 
-  static const columnId = '_id';
-  static const columnTitle = 'title';
-  static const columnContent = 'content';
-
-  // Singleton class
-  DatabaseHelper._privateConstructor();
-  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
-
-  // Database reference
-  static Database? _database;
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDatabase();
-    return _database!;
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body)['data'];
+      return data.map<Note>((item) => Note(item['title'], item['content'], id: item['id'])).toList();
+    } else {
+      throw Exception('Failed to load notes');
+    }
   }
 
-  // Open the database
-  _initDatabase() async {
-    String path = join(await getDatabasesPath(), _databaseName);
-    return await openDatabase(path,
-        version: _databaseVersion, onCreate: _onCreate);
+  // Insert a note into the server
+  static Future<void> insert(Note note) async {
+    var response = await http.post(
+      Uri.parse(serverUrl),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(note.toMap()),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to insert note');
+    }
   }
 
-  // SQL code to create the database table
-  Future _onCreate(Database db, int version) async {
-    await db.execute('''
-          CREATE TABLE $table (
-            $columnId INTEGER PRIMARY KEY,
-            $columnTitle TEXT NOT NULL,
-            $columnContent TEXT NOT NULL
-          )
-          ''');
+  // Update a note in the server
+  static Future<void> update(Note note) async {
+    var response = await http.put(
+      Uri.parse('$serverUrl/${note.id}'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(note.toMap()),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update note');
+    }
   }
 
-  // Insert a note into the database
-  Future<int> insert(Note note) async {
-    Database db = await instance.database;
-    return await db.insert(table, note.toMap());
-  }
+  // Delete a note from the server
+  static Future<void> delete(int id) async {
+    var response = await http.delete(Uri.parse('$serverUrl/$id'));
 
-  // Get all notes from the database
-  Future<List<Note>> getNotes() async {
-    Database db = await instance.database;
-    var notes = await db.query(table, orderBy: '$columnId ASC');
-    return List.generate(notes.length, (i) {
-      return Note(
-        notes[i][columnTitle] as String,
-        notes[i][columnContent] as String,
-        id: notes[i][columnId] as int,
-      );
-    });
-  }
-
-  // Update a note in the database
-  Future<int> update(Note note) async {
-    Database db = await instance.database;
-    return await db.update(table, note.toMap(),
-        where: '$columnId = ?', whereArgs: [note.id]);
-  }
-
-  // Delete a note from the database
-  Future<int> delete(int id) async {
-    Database db = await instance.database;
-    return await db.delete(table, where: '$columnId = ?', whereArgs: [id]);
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete note');
+    }
   }
 }
