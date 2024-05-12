@@ -174,7 +174,7 @@ packages:
     source: hosted
     version: "2.1.2"
   http:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: http
       sha256: "761a297c042deedc1ffbb156d6e2af13886bb305c2a343a4d972504cd67dd938"
@@ -425,10 +425,10 @@ packages:
     dependency: transitive
     description:
       name: rikulo_commons
-      sha256: "3208a504bf1e895ed634f19273c2d6d342d91978660def747f1dbb44f01543da"
+      sha256: "5d7b71cb1f7c4f2e4bc0be5782047e45c3297f0dc9586061d4466e83d261e4fe"
       url: "https://pub.dev"
     source: hosted
-    version: "6.0.1+1"
+    version: "6.1.0"
   sasl_scram:
     dependency: transitive
     description:
