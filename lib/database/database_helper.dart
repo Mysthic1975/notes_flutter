@@ -1,11 +1,20 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/note.dart';
+import 'dart:async';
 
 class DatabaseHelper {
-  static const serverUrl = 'http://localhost:8080/data';
+  static const serverUrl = 'http://192.168.178.20:8080/data';
 
-  // Get all notes from the server
+  static final StreamController<List<Note>> _notesStreamController = StreamController.broadcast();
+
+  static Stream<List<Note>> get notesStream => _notesStreamController.stream;
+
+  static Future<void> loadNotes() async {
+    var newNotes = await getNotes();
+    _notesStreamController.add(newNotes);
+  }
+
   static Future<List<Note>> getNotes() async {
     var response = await http.get(Uri.parse(serverUrl));
 
@@ -17,7 +26,6 @@ class DatabaseHelper {
     }
   }
 
-  // Insert a note into the server
   static Future<void> insert(Note note) async {
     var response = await http.post(
       Uri.parse(serverUrl),
@@ -30,9 +38,9 @@ class DatabaseHelper {
     if (response.statusCode != 200) {
       throw Exception('Failed to insert note');
     }
+    await loadNotes();
   }
 
-  // Update a note in the server
   static Future<void> update(Note note) async {
     var response = await http.put(
       Uri.parse('$serverUrl/${note.id}'),
@@ -45,14 +53,15 @@ class DatabaseHelper {
     if (response.statusCode != 200) {
       throw Exception('Failed to update note');
     }
+    await loadNotes();
   }
 
-  // Delete a note from the server
   static Future<void> delete(int id) async {
     var response = await http.delete(Uri.parse('$serverUrl/$id'));
 
     if (response.statusCode != 200) {
       throw Exception('Failed to delete note');
     }
+    await loadNotes();
   }
 }

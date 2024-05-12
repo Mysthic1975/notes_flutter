@@ -14,19 +14,10 @@ class NotesPage extends StatefulWidget {
 }
 
 class NotesPageState extends State<NotesPage> {
-  List<Note> notes = [];
-
   @override
   void initState() {
     super.initState();
-    loadNotes();
-  }
-
-  Future<void> loadNotes() async {
-    var newNotes = await DatabaseHelper.getNotes();
-    setState(() {
-      notes = newNotes;
-    });
+    DatabaseHelper.loadNotes();
   }
 
   @override
@@ -45,30 +36,42 @@ class NotesPageState extends State<NotesPage> {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: notes.length,
-        itemBuilder: (context, index) {
-          return Card(
-            child: ListTile(
-              title: Text(
-                notes[index].title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              onTap: () async {
-                var result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => NoteDetailPage(note: notes[index]),
+      body: StreamBuilder<List<Note>>(
+        stream: DatabaseHelper.notesStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            var notes = snapshot.data!;
+            return ListView.builder(
+              itemCount: notes.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  child: ListTile(
+                    title: Text(
+                      notes[index].title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    onTap: () async {
+                      var result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NoteDetailPage(note: notes[index]),
+                        ),
+                      );
+                      if (result == 'update' || result == 'delete') {
+                        DatabaseHelper.loadNotes();
+                      }
+                    },
                   ),
                 );
-                if (result == 'update' || result == 'delete') {
-                  loadNotes();
-                }
               },
-            ),
-          );
+            );
+          } else if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          } else {
+            return const CircularProgressIndicator();
+          }
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -124,7 +127,7 @@ class NotesPageState extends State<NotesPage> {
                         onPressed: () {
                           Navigator.of(dialogContext).pop(); // Pop the dialog first
                           Note note = Note(title, content);
-                          DatabaseHelper.insert(note).then((_) => loadNotes());
+                          DatabaseHelper.insert(note).then((_) => DatabaseHelper.loadNotes());
                         },
                       ),
                     ],
