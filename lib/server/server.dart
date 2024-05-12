@@ -92,12 +92,29 @@ class Server {
   }
 }
 
+Future<void> ensureTableExists(Pool pool) async {
+  var client = await pool.connect();
+  client.query('''
+    CREATE TABLE IF NOT EXISTS notes (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL
+    )
+  ''');
+  client.close();
+}
+
 void main() {
   var uri = 'postgres://postgres:admin@localhost:5433/postgres';
   var pool = Pool(uri, minConnections: 2, maxConnections: 5);
-  pool.start().then((_) {
+  pool.start().then((_) async {
+    await ensureTableExists(pool);
     final server = Server(pool);
-
-    io.serve(server.handler, '192.168.178.20', 8080);
+    try {
+      io.serve(server.handler, '192.168.178.20', 8080);
+      print('Server is running on http://192.168.178.20:8080');
+    } catch (e) {
+      print('An error occurred while starting the server: $e');
+    }
   });
 }
