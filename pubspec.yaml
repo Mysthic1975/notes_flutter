@@ -16,6 +16,8 @@ dependencies:
   postgresql2: any
   shelf: ^1.4.0
   shelf_router: ^1.1.0
+  shelf_web_socket: ^1.0.4
+  web_socket_channel: ^2.4.5
   sqflite: ^2.3.3+1
   path: ^1.8.0
   intl: ^0.18.1

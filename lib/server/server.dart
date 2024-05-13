@@ -2,12 +2,15 @@ import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:postgresql2/pool.dart';
+import 'package:shelf_web_socket/shelf_web_socket.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:shelf/shelf_io.dart' as io;
 
 class Server {
   final Router _router;
   final Pool _pool;
   final Middleware _corsMiddleware;
+  final List<WebSocketChannel> _webSocketChannels = [];
 
   Server(this._pool)
       : _router = Router(),
@@ -22,6 +25,15 @@ class Server {
             return response.change(headers: _createCorsHeaders());
           },
         ) {
+    _router.get('/ws', webSocketHandler((webSocketChannel) {
+      _webSocketChannels.add(webSocketChannel);
+      webSocketChannel.stream.listen((message) {
+        _handleWebSocketMessage(message);
+      }, onDone: () {
+        _webSocketChannels.remove(webSocketChannel);
+      });
+    }));
+
     _router.get('/data', _handleGetData);
     _router.post('/data', _handlePostData);
     _router.put('/data/<id>', _handlePutData);
@@ -42,12 +54,24 @@ class Server {
     return headers;
   }
 
+  void _handleWebSocketMessage(String message) {
+    var decodedMessage = jsonDecode(message);
+    var action = decodedMessage['action'];
+
+    switch (action) {
+      case 'create':
+      case 'update':
+      case 'delete':
+        _broadcastMessage(decodedMessage);
+        break;
+    }
+  }
+
   Future<Response> _handleGetData(Request request) async {
     var client = await _pool.connect();
     var resultStream = client.query('SELECT * FROM notes');
 
     var result = await resultStream.toList();
-
     client.close();
 
     var data = result.map((row) => {'id': row[0], 'title': row[1], 'content': row[2]}).toList();
@@ -61,7 +85,10 @@ class Server {
     var title = body['title'];
     var content = body['content'];
 
-    await client.query('INSERT INTO notes (title, content) VALUES (@a, @b)', {'a': title, 'b': content}).toList();
+    await for (var row in client.query('INSERT INTO notes (title, content) VALUES (@a, @b) RETURNING id', {'a': title, 'b': content})) {
+      var noteId = row[0];
+      _broadcastMessage({'action': 'create', 'noteId': noteId});
+    }
 
     client.close();
 
@@ -78,6 +105,8 @@ class Server {
 
     client.close();
 
+    _broadcastMessage({'action': 'update', 'noteId': int.parse(id)});
+
     return Response.ok(jsonEncode({'result': 'success'}));
   }
 
@@ -88,7 +117,16 @@ class Server {
 
     client.close();
 
+    _broadcastMessage({'action': 'delete', 'noteId': int.parse(id)});
+
     return Response.ok(jsonEncode({'result': 'success'}));
+  }
+
+  void _broadcastMessage(Map<String, dynamic> message) {
+    var encodedMessage = jsonEncode(message);
+    for (var channel in _webSocketChannels) {
+      channel.sink.add(encodedMessage);
+    }
   }
 }
 
